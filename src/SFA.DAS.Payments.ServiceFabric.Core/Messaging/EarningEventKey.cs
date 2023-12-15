@@ -1,24 +1,13 @@
 ﻿using System;
-using SFA.DAS.Payments.Messages.Core.Events;
+using SFA.DAS.Payments.Messages.Common.Events;
 using SFA.DAS.Payments.Model.Core;
 
 namespace SFA.DAS.Payments.ServiceFabric.Core.Messaging
 {
     public class EarningEventKey
     {
-        public long JobId { get; set; }
-        public long Ukprn { get; set; }
-        public Learner Learner { get; set; }
-        public LearningAim LearningAim { get; set; }
-        public CollectionPeriod CollectionPeriod { get; set; }
-        public string EventType {  get; set;}
-
-        public virtual string Key => CreateKey();
-        public virtual string LogSafeKey => CreateLogSafeKey();
-
         protected EarningEventKey()
         {
-
         }
 
         public EarningEventKey(IPaymentsEvent earningEvent)
@@ -46,14 +35,26 @@ namespace SFA.DAS.Payments.ServiceFabric.Core.Messaging
             EventType = earningEvent.GetType().Name;
         }
 
+        public long JobId { get; set; }
+        public long Ukprn { get; set; }
+        public Learner Learner { get; set; }
+        public LearningAim LearningAim { get; set; }
+        public CollectionPeriod CollectionPeriod { get; set; }
+        public string EventType { get; set; }
+
+        public virtual string Key => CreateKey();
+        public virtual string LogSafeKey => CreateLogSafeKey();
+
         protected virtual string CreateKey()
         {
-            return $@"{JobId}-{Ukprn}-{CollectionPeriod.AcademicYear}-{CollectionPeriod.Period}-{Learner.Uln}-{Learner.ReferenceNumber}-{LearningAim.Reference}-{LearningAim.ProgrammeType}-{LearningAim.StandardCode}-{LearningAim.FrameworkCode}-{LearningAim.PathwayCode}-{LearningAim.FundingLineType}-{LearningAim.SequenceNumber}-{LearningAim.StartDate:G}-{EventType}";
+            return
+                $@"{JobId}-{Ukprn}-{CollectionPeriod.AcademicYear}-{CollectionPeriod.Period}-{Learner.Uln}-{Learner.ReferenceNumber}-{LearningAim.Reference}-{LearningAim.ProgrammeType}-{LearningAim.StandardCode}-{LearningAim.FrameworkCode}-{LearningAim.PathwayCode}-{LearningAim.FundingLineType}-{LearningAim.SequenceNumber}-{LearningAim.StartDate:G}-{EventType}";
         }
 
         protected virtual string CreateLogSafeKey()
         {
-            return $@"{JobId}-{CollectionPeriod.AcademicYear}-{CollectionPeriod.Period}-{Learner.ReferenceNumber}-{LearningAim.Reference}-{LearningAim.ProgrammeType}-{LearningAim.StandardCode}-{LearningAim.FrameworkCode}-{LearningAim.PathwayCode}-{LearningAim.FundingLineType}-{LearningAim.SequenceNumber}-{LearningAim.StartDate:G}-{EventType}";
+            return
+                $@"{JobId}-{CollectionPeriod.AcademicYear}-{CollectionPeriod.Period}-{Learner.ReferenceNumber}-{LearningAim.Reference}-{LearningAim.ProgrammeType}-{LearningAim.StandardCode}-{LearningAim.FrameworkCode}-{LearningAim.PathwayCode}-{LearningAim.FundingLineType}-{LearningAim.SequenceNumber}-{LearningAim.StartDate:G}-{EventType}";
         }
     }
 }
