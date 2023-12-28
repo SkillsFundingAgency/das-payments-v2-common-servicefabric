@@ -16,11 +16,7 @@
     <PackageReference Include="Moq" Version="4.10.0" />
     <PackageReference Include="nunit" Version="3.11.0" />
     <PackageReference Include="NUnit3TestAdapter" Version="3.11.2" />
-    <PackageReference Include="SFA.DAS.Payments.Application" Version="2.1.2-CI-20231215-143651" />
-    <PackageReference Include="SFA.DAS.Payments.Core" Version="2.1.2-CI-20231215-143651" />
-    <PackageReference Include="SFA.DAS.Payments.Messages.Common" Version="2.1.2-CI-20231215-143651" />
-    <PackageReference Include="SFA.DAS.Payments.Messaging" Version="2.1.2-CI-20231215-143651" />
-    <PackageReference Include="SFA.DAS.Payments.Model.Core" Version="2.1.2-CI-20231215-143651" />
+    <PackageReference Include="SFA.DAS.Payments.Application" Version="2.1.2-CI-20231220-111647" />
     <PackageReference Include="SFA.DAS.Payments.Monitoring.Jobs.Messages" Version="0.0.14" />
   </ItemGroup>
 
