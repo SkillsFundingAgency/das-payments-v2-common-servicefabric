@@ -4,12 +4,11 @@ jobs:
 - job: CodeBuild
   pool:
     name: SLD Build pool
+    #demands: LATEST_DOTNET_VERSION
   variables:
   - group: BUILD Management Resources
-  - name: SolutionBaseName
-    value: SFA.DAS.Payments.ServiceFabric.Core
   steps:
-  - template: /azure-pipelines-templates/build/step/gitversion.yml
+  #- template: /azure-pipelines-templates/build/step/gitversion.yml
 
   - task: DotNetCoreCLI@2
     displayName: Restore
@@ -36,10 +35,10 @@ jobs:
       arguments: '--configuration $(buildConfiguration) --no-restore'
 
   - task: DotNetCoreCLI@2
-    displayName: "Publish $(SolutionBaseName)"
+    displayName: "Publish SFA.DAS.Payments.ServiceFabric.Core"
     inputs:
       command: publish
-      publishWebProjects: false
+      publishWebProjects: false #set to false as this setting (which defaults to true) will parse the entire repo for web projects
       projects: src/SFA.DAS.Payments.ServiceFabric.Core/SFA.DAS.Payments.ServiceFabric.Core.csproj
       arguments: "-o $(build.artifactstagingdirectory)/publish -c $(BuildConfiguration) --no-restore --no-build"
       modifyOutputPath: true
@@ -61,6 +60,5 @@ jobs:
   - template: /azure-pipelines-templates/build/step/nuget-pack.yml
     parameters:
       DotNetStandardPackagesToPack: |
-         src/SFA.DAS.Payments.ServiceFabric.Core/SFA.DAS.Payments.ServiceFabric.Core.csproj;
-
+         src/SFA.DAS.Payments.ServiceFabric.Core/SFA.DAS.Payments.ServiceFabric.Core;
         
