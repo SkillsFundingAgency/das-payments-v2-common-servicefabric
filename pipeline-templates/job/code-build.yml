@@ -60,5 +60,5 @@ jobs:
   - template: /azure-pipelines-templates/build/step/nuget-pack.yml
     parameters:
       DotNetStandardPackagesToPack: |
-         src/SFA.DAS.Payments.ServiceFabric.Core/SFA.DAS.Payments.ServiceFabric.Core;
+         src/SFA.DAS.Payments.ServiceFabric.Core/SFA.DAS.Payments.ServiceFabric.Core.csproj;
         
