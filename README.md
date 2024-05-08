@@ -10,7 +10,7 @@
 
 The Payments V2 Common ServiceFabric library contains reusable code for applications running under the Microsoft ServiceFabric platform.
 
-More information here: https://skillsfundingagency.atlassian.net/wiki/spaces/NDL/pages/533856257/b.+Data+Locks+Application
+More information here: https://skillsfundingagency.atlassian.net/wiki/spaces/NDL/pages/400130049
 
 ## How It Works
 
