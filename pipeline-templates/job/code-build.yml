@@ -1,10 +1,10 @@
 parameters:
   TargetProjects: 'src/**/*.csproj'
+
 jobs:
 - job: CodeBuild
   pool:
     name: SLD Build pool
-    #demands: LATEST_DOTNET_VERSION
   variables:
   - group: BUILD Management Resources
   steps:
@@ -60,5 +60,4 @@ jobs:
   - template: /azure-pipelines-templates/build/step/nuget-pack.yml
     parameters:
       DotNetStandardPackagesToPack: |
-         src/SFA.DAS.Payments.ServiceFabric.Core/SFA.DAS.Payments.ServiceFabric.Core.csproj;
-        
+        src/SFA.DAS.Payments.ServiceFabric.Core/SFA.DAS.Payments.ServiceFabric.Core.csproj;       
