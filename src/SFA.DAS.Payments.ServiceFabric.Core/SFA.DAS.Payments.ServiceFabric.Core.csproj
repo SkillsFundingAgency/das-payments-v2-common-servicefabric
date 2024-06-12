@@ -25,6 +25,7 @@
     <PackageReference Include="Autofac.Extensions.DependencyInjection" Version="8.0.0" />
     <PackageReference Include="Autofac.ServiceFabric" Version="4.0.0" />
     <PackageReference Include="Azure.Messaging.ServiceBus" Version="7.15.0" />
+    <PackageReference Include="Microsoft.Azure.ServiceBus" Version="5.2.0" />
     <PackageReference Include="Microsoft.ServiceFabric" Version="10.0.1816" />    
     <PackageReference Include="Microsoft.ServiceFabric.Actors" Version="7.0.1816" />
     <PackageReference Include="Microsoft.ServiceFabric.Data.Interfaces" Version="7.0.1816" />
@@ -33,6 +34,7 @@
     <PackageReference Include="NServiceBus" Version="8.1.1" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageReference Include="SFA.DAS.Payments.Application" Version="2.0.0-prerelease-19" />
+    <PackageReference Include="SFA.DAS.Payments.Messaging" Version="2.0.0-prerelease-19" />
   </ItemGroup>
 
   <ItemGroup>
