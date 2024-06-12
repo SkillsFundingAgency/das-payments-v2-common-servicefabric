@@ -1,32 +1,36 @@
 ﻿using System;
 using Autofac;
+using Autofac.Extensions.DependencyInjection;
 using Autofac.Integration.ServiceFabric;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.ServiceFabric.Actors.Runtime;
 using Microsoft.ServiceFabric.Services.Runtime;
 using NServiceBus;
 using NServiceBus.UnitOfWork;
+using SFA.DAS.Payments.Application.Infrastructure.Configuration;
 using SFA.DAS.Payments.Application.Infrastructure.Ioc;
 using SFA.DAS.Payments.Application.Messaging;
 using SFA.DAS.Payments.ServiceFabric.Core.Batch;
+using SFA.DAS.Payments.ServiceFabric.Core.Infrastructure.Configuration;
 using SFA.DAS.Payments.ServiceFabric.Core.Infrastructure.UnitOfWork;
 
 namespace SFA.DAS.Payments.ServiceFabric.Core.Infrastructure.Ioc
 {
     public static class ServiceFabricContainerFactory
     {
-        public static IContainer CreateContainerForActor<TActor>(int idleTimeInSeconds = 300,int scanIntervalInSeconds = 30) where TActor : Actor
+        public static IContainer CreateContainerForActor<TActor>(int idleTimeInSeconds = 300, int scanIntervalInSeconds = 30) where TActor : Actor
         {
 
             var builder = ContainerFactory.CreateBuilder();
             builder.RegisterActor<TActor>(settings: new ActorServiceSettings()
-                {
-                    ActorGarbageCollectionSettings =
+            {
+                ActorGarbageCollectionSettings =
                         new ActorGarbageCollectionSettings(idleTimeInSeconds, scanIntervalInSeconds)
-                })
+            })
                 .OnActivating(e =>
                 {
-                    ((ActorStateManagerProvider) e.Context.Resolve<IActorStateManagerProvider>()).Current = e.Instance.StateManager;
-                    ((ActorIdProvider) e.Context.Resolve<IActorIdProvider>()).Current = e.Instance.Id;
+                    ((ActorStateManagerProvider)e.Context.Resolve<IActorStateManagerProvider>()).Current = e.Instance.StateManager;
+                    ((ActorIdProvider)e.Context.Resolve<IActorIdProvider>()).Current = e.Instance.Id;
                 });
             var container = ContainerFactory.CreateContainer(builder);
             return container;
@@ -35,6 +39,7 @@ namespace SFA.DAS.Payments.ServiceFabric.Core.Infrastructure.Ioc
         public static IContainer CreateContainerForStatefulService<TStatefulService>(bool resolveEndpointConfig = true) where TStatefulService : StatefulService
         {
             var builder = ContainerFactory.CreateBuilder();
+            EndpointInstanceFactory.Initialise(ApplicationConfiguration.Create(new ServiceFabricConfigurationHelper()));
 
             builder.RegisterType<StateManagerUnitOfWork>().As<IManageUnitsOfWork>().InstancePerLifetimeScope();
 
@@ -44,21 +49,6 @@ namespace SFA.DAS.Payments.ServiceFabric.Core.Infrastructure.Ioc
                     ((ReliableStateManagerProvider)e.Context.Resolve<IReliableStateManagerProvider>()).Current = e.Instance.StateManager;
                 });
             var container = ContainerFactory.CreateContainer(builder);
-            if (resolveEndpointConfig)
-            {
-                var endpointConfiguration = container.Resolve<EndpointConfiguration>();
-                endpointConfiguration.UseContainer<AutofacBuilder>(customizations =>
-                {
-                    customizations.ExistingLifetimeScope(container);
-                });
-            }
-            else
-            {
-                EndpointConfigurationEvents.EndpointConfigured += (sender, e) =>
-                {
-                    e.UseContainer<AutofacBuilder>(customizations => customizations.ExistingLifetimeScope(container));
-                };
-            }
             return container;
         }
 
@@ -70,13 +60,9 @@ namespace SFA.DAS.Payments.ServiceFabric.Core.Infrastructure.Ioc
         public static IContainer CreateContainerForStatelessService<TStatelessService>() where TStatelessService : StatelessService
         {
             var builder = CreateBuilderForStatelessService<TStatelessService>();
-            var container = ContainerFactory.CreateContainer(builder);
-            var endpointConfiguration = container.Resolve<EndpointConfiguration>();
-            endpointConfiguration.UseContainer<AutofacBuilder>(customizations =>
-            {
-                customizations.ExistingLifetimeScope(container);
-            });
-            return container;
+            EndpointInstanceFactory.Initialise(ApplicationConfiguration.Create(new ServiceFabricConfigurationHelper()));
+
+            return ContainerFactory.CreateContainer(builder);            
         }
 
         public static ContainerBuilder CreateBuilderForStatelessService<TStatelessService>(string serviceTypeName) where TStatelessService : StatelessService

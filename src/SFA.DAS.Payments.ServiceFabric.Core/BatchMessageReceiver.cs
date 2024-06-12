@@ -1,34 +1,32 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Azure.ServiceBus;
-using Microsoft.Azure.ServiceBus.Core;
+using Azure.Messaging.ServiceBus;
 
 namespace SFA.DAS.Payments.ServiceFabric.Core
 {
     public class BatchMessageReceiver
     {
-        private readonly MessageReceiver messageReceiver;
-        private readonly List<Message> messages;
-        public BatchMessageReceiver(ServiceBusConnection connection, string endpointName)
+        private readonly ServiceBusReceiver messageReceiver;
+        private readonly List<ServiceBusReceivedMessage> messages;
+        public BatchMessageReceiver(ServiceBusClient client, string endpointName)
         {
-            if (connection == null) throw new ArgumentNullException(nameof(connection));
+            if (client == null) throw new ArgumentNullException(nameof(client));
             if (endpointName == null) throw new ArgumentNullException(nameof(endpointName));
-            messageReceiver = new MessageReceiver(connection, endpointName, ReceiveMode.PeekLock,
-                RetryPolicy.Default, 0);
-            messages = new List<Message>();
+            messageReceiver = client.CreateReceiver(endpointName);
+            messages = new List<ServiceBusReceivedMessage>();
         }
 
-        public async Task<ReadOnlyCollection<Message>> ReceiveMessages(int batchSize, CancellationToken cancellationToken)
+        public async Task<ReadOnlyCollection<ServiceBusReceivedMessage>> ReceiveMessages(int batchSize, CancellationToken cancellationToken)
         {
             messages.Clear();
             for (var i = 0; i < 10 && messages.Count <= batchSize; i++)
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                var receivedMessages = await messageReceiver.ReceiveAsync(batchSize, TimeSpan.FromMilliseconds(500))
+                var receivedMessages = await messageReceiver.ReceiveMessagesAsync(batchSize, TimeSpan.FromMilliseconds(500), cancellationToken)
                     .ConfigureAwait(false);
                 if (receivedMessages == null || !receivedMessages.Any())
                     break;
@@ -37,39 +35,48 @@ namespace SFA.DAS.Payments.ServiceFabric.Core
             return messages.AsReadOnly();
         }
 
+
+
         public async Task Complete(IEnumerable<string> lockTokens)
         {
-            await messageReceiver.CompleteAsync(lockTokens).ConfigureAwait(false);
+            foreach (var serviceBusReceivedMessage in messages.Where(message => lockTokens.Any(lockToken => lockToken.Equals(message.LockToken))))
+            {
+                await messageReceiver.CompleteMessageAsync(serviceBusReceivedMessage).ConfigureAwait(false);
+            }
         }
 
-        public async Task Complete(string lockToken)
-        {
-            await messageReceiver.CompleteAsync(lockToken);
-        }
 
         public async Task Abandon(IList<string> lockTokens)
         {
-            await Task.WhenAll(lockTokens.Select(token => messageReceiver.AbandonAsync(token)))
-                .ConfigureAwait(false);
+            foreach (var serviceBusReceivedMessage in messages.Where(message => lockTokens.Any(lockToken => lockToken.Equals(message.LockToken))))
+            {
+                await messageReceiver.AbandonMessageAsync(serviceBusReceivedMessage).ConfigureAwait(false);
+            }
         }
 
-        public async Task Abandon(string lockToken)
+        public async Task DeadLetter(string lockToken, CancellationToken cancellationToken)
         {
-            await messageReceiver.AbandonAsync(lockToken);
+            var receivedMessage = messages.FirstOrDefault(message => message.LockToken.Equals(lockToken));
+            if (receivedMessage == null)
+                return;
+            await messageReceiver.DeadLetterMessageAsync(receivedMessage, null, cancellationToken).ConfigureAwait(false);
         }
 
-        public async Task DeadLetter(Message message)
+        public async Task DeadLetter(ServiceBusReceivedMessage failedMessage, CancellationToken cancellationToken)
         {
-            var failedMessage =
-                messages.FirstOrDefault(msg => msg.SystemProperties.LockToken == message.SystemProperties.LockToken);
-            if (failedMessage == null)
-                throw new InvalidOperationException($"Cannot move the message to the dead letter queue Message not found in list of received messages");
-            await messageReceiver.DeadLetterAsync(failedMessage.SystemProperties.LockToken).ConfigureAwait(false);
+            if (failedMessage == null) throw new ArgumentNullException(nameof(failedMessage));
+            await messageReceiver.DeadLetterMessageAsync(failedMessage, null, cancellationToken).ConfigureAwait(false);
+        }
+
+        public async Task Abandon(ServiceBusReceivedMessage message, CancellationToken cancellationToken)
+        {
+            if (message == null) throw new ArgumentNullException(nameof(message));
+            await messageReceiver.DeadLetterMessageAsync(message, null, cancellationToken).ConfigureAwait(false);
         }
 
         public async Task Close()
         {
-            if (!messageReceiver.IsClosedOrClosing)
+            if (!messageReceiver.IsClosed)
                 await messageReceiver.CloseAsync().ConfigureAwait(false);
         }
     }
