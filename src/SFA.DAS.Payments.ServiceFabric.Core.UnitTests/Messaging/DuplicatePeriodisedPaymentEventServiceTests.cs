@@ -56,7 +56,8 @@ namespace SFA.DAS.Payments.ServiceFabric.Core.UnitTests.Messaging
                 ApprenticeshipId = 123123
             };
         }
-        //TODO: Uncomment when FundingSource Nuget package is added to Nuget
+
+        //TODO: Uncomment when SFA.DAS.Payments.FundingSource.Messages is added to Nuget
         /*private LevyFundingSourcePaymentEvent CreateDefaultEarningEvent()
         {
             return CreateEvent<LevyFundingSourcePaymentEvent>();
