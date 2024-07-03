@@ -1,40 +1,63 @@
 parameters:
-  SolutionBaseName:
-  BuildConfiguration:
+  TargetProjects: 'src/**/*.csproj'
 
 jobs:
 - job: CodeBuild
   pool:
-    name: DAS - Continuous Integration Agents
-    workspace:
-      clean: all
+    name: SLD Build pool
   variables:
   - group: BUILD Management Resources
   steps:
-  - template: azure-pipelines-templates/build/step/gitversion.yml@das-platform-building-blocks
-
-  - template: azure-pipelines-templates/build/step/app-build.yml@das-platform-building-blocks
+  - template: /azure-pipelines-templates/build/step/gitversion.yml
 
   - task: DotNetCoreCLI@2
-    displayName: Publish - dotnet publish ${{ parameters.SolutionBaseName }}
+    displayName: Restore
+    inputs:
+      command: restore
+      projects: ${{ parameters.TargetProjects }}
+      noCache: true
+      feedsToUse: 'select'
+      vstsFeed: 'dct-pkg'
+
+  - task: NuGetCommand@2
+    displayName: Restore
+    inputs:
+      command: restore
+      projects: ${{ parameters.TargetProjects }}
+      noCache: true
+      feedsToUse: 'select'
+      vstsFeed: 'dct-pkg'
+    
+  - task: DotNetCoreCLI@2
+    displayName: Build
+    inputs:
+      projects:  ${{ parameters.TargetProjects }}
+      arguments: '--configuration $(buildConfiguration) --no-restore'
+
+  - task: DotNetCoreCLI@2
+    displayName: "Publish SFA.DAS.Payments.ServiceFabric.Core"
     inputs:
       command: publish
       publishWebProjects: false #set to false as this setting (which defaults to true) will parse the entire repo for web projects
-      projects: src/${{ parameters.SolutionBaseName }}/${{ parameters.SolutionBaseName }}.csproj
-      arguments: -o $(build.artifactstagingdirectory)/publish -c ${{ parameters.BuildConfiguration }} --no-build
+      projects: src/SFA.DAS.Payments.ServiceFabric.Core/SFA.DAS.Payments.ServiceFabric.Core.csproj
+      arguments: "-o $(build.artifactstagingdirectory)/publish -c $(BuildConfiguration) --no-restore --no-build"
       modifyOutputPath: true
-      zipAfterPublish: true
 
   - task: CopyFiles@2
-    displayName: Copy Files to $(build.artifactstagingdirectory)/publish
+    displayName: 'Copy Files to: $(build.artifactstagingdirectory)/publish'
     inputs:
       Contents: |
-        azure/**
-      TargetFolder: $(build.artifactstagingdirectory)/publish
+       /**
+      TargetFolder: '$(build.artifactstagingdirectory)/publish'
       OverWrite: true
 
   - task: PublishPipelineArtifact@1
-    displayName: Publish Build Artifact
+    displayName: 'Publish Artifact: drop'
     inputs:
       targetPath: $(build.artifactstagingdirectory)/publish
-      artifactName: ${{ parameters.SolutionBaseName }}
+      artifactName: drop
+
+  - template: /azure-pipelines-templates/build/step/nuget-pack.yml
+    parameters:
+      DotNetStandardPackagesToPack: |
+        src/SFA.DAS.Payments.ServiceFabric.Core/SFA.DAS.Payments.ServiceFabric.Core.csproj;       
