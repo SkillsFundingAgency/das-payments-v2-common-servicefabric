@@ -7,7 +7,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
 using Autofac;
-using Azure.Messaging.ServiceBus;
 using Microsoft.Azure.ServiceBus;
 using Microsoft.Azure.ServiceBus.Core;
 using Microsoft.Azure.ServiceBus.InteropExtensions;
@@ -29,12 +28,12 @@ namespace SFA.DAS.Payments.ServiceFabric.Core
     public class ServiceBusBatchCommunicationListener : IServiceBusBatchCommunicationListener
     {
         public string EndpointName { get; set; }
-        
+
         private readonly IPaymentLogger logger;
         private readonly IContainerScopeFactory scopeFactory;
         private readonly string connectionString;
         private readonly string errorQueueName;
-        
+
         private CancellationToken startingCancellationToken;
 
         public ServiceBusBatchCommunicationListener(string connectionString, string endpointName, string errorQueueName, IPaymentLogger logger, IContainerScopeFactory scopeFactory)
@@ -74,8 +73,7 @@ namespace SFA.DAS.Payments.ServiceFabric.Core
 
         private async Task Listen(CancellationToken cancellationToken)
         {
-            var serviceBusClient = new ServiceBusClient(connectionString);
-            //var connection = new ServiceBusConnection(connectionString);
+            var connection = new ServiceBusConnection(connectionString);
             var messageReceiver = new MessageReceiver(connection, EndpointName, ReceiveMode.PeekLock, RetryPolicy.Default);
 
             try
