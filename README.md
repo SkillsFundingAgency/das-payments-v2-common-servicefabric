@@ -16,19 +16,17 @@ More information here: https://skillsfundingagency.atlassian.net/wiki/spaces/NDL
 
 The library is published to nuget.org as the package `SFA.DAS.Payments.ServiceFabric.Core`
 
-The library contains utility code for interacting with Azure Service Bus, ServiceFabric configuration and caching.
+The library contains utility code for interacting with Azure Service Bus, ServiceFabric configuration, and caching.
 
 ## 🚀 Installation
 
 ### Pre-Requisites
 
-* An Azure DevBox configured for Payments V2 development
-
-Setup instructions: https://skillsfundingagency.atlassian.net/wiki/spaces/NDL/pages/950927878/Development+Environment+-+Payments+V2+DAS+Space
+Setup instructions can be found at the following link, which will help you set up your environment and access the correct repositories: https://skillsfundingagency.atlassian.net/wiki/spaces/NDL/pages/950927878/Development+Environment+-+Payments+V2+DAS+Space
 
 ### Config
 
-N/A - the ServiceFabric applications that consume this library will have their own configuration.
+N/A - the ServiceFabric applications that consume this library will have their configuration.
 
 ## 🔗 External Dependencies
 
