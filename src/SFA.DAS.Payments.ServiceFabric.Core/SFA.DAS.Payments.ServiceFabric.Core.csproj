@@ -43,10 +43,10 @@
     <PackageReference Include="Microsoft.ServiceFabric.Services" Version="7.0.1001" />
     <PackageReference Include="NServiceBus" Version="8.1.1" />
 
-    <PackageReference Include="SFA.DAS.Payments.Core" Version="2.0.6-prerelease-13" />
-    <PackageReference Include="SFA.DAS.Payments.Application" Version="2.0.6-prerelease-13" />
-    <PackageReference Include="SFA.DAS.Payments.Messages.Common" Version="2.0.6-prerelease-13" />
-    <PackageReference Include="SFA.DAS.Payments.Messaging" Version="2.0.6-prerelease-13" />
+    <PackageReference Include="SFA.DAS.Payments.Core" Version="2.0.6-prerelease-26" />
+    <PackageReference Include="SFA.DAS.Payments.Application" Version="2.0.6-prerelease-26" />
+    <PackageReference Include="SFA.DAS.Payments.Messages.Core" Version="2.0.6-prerelease-26" />
+    <PackageReference Include="SFA.DAS.Payments.Messaging" Version="2.0.6-prerelease-26" />
   </ItemGroup>
 
   <ItemGroup>
@@ -58,5 +58,4 @@
   <ItemGroup>
     <Folder Include="Infrastructure\UnitOfWork\" />
   </ItemGroup>
-
 </Project>
