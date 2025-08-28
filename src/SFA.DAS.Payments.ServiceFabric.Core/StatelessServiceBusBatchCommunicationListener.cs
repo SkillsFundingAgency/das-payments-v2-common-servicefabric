@@ -36,7 +36,6 @@ namespace SFA.DAS.Payments.ServiceFabric.Core
         public string EndpointName { get; set; }
         private readonly string errorQueueName;
         private CancellationToken startingCancellationToken;
-        //protected string TelemetryPrefix => GetType().Name;
 
         private const string TopicPath = "bundle-1";
 
@@ -210,28 +209,24 @@ namespace SFA.DAS.Payments.ServiceFabric.Core
             var messageReceivers = new List<BatchMessageReceiver>();
             messageReceivers.AddRange(Enumerable.Range(0, 3)
                 .Select(i => new BatchMessageReceiver(client, EndpointName)));
-            //var errorQueueSender = new MessageSender(connection, errorQueueName, RetryPolicy.Default);
             try
             {
                 while (!cancellationToken.IsCancellationRequested)
                 {
                     try
                     {
-                        //var pipeLineStopwatch = Stopwatch.StartNew();
-                        //var receiveTimer = Stopwatch.StartNew();
-
                         var receiveTasks =
                             messageReceivers.Select(receiver => ReceiveMessages(receiver, cancellationToken)).ToList();
                         await Task.WhenAll(receiveTasks).ConfigureAwait(false);
 
                         var messages = receiveTasks.SelectMany(task => task.Result).ToList();
-                        //receiveTimer.Stop();
+
                         if (!messages.Any())
                         {
                             await Task.Delay(2000, cancellationToken);
                             continue;
                         }
-                        //RecordMetric("ReceiveMessages", receiveTimer.ElapsedMilliseconds, messages.Count);
+
                         var groupedMessages = new Dictionary<Type, List<(object Message, BatchMessageReceiver MessageReceiver, ServiceBusReceivedMessage ReceivedMessage)>>();
                         foreach (var message in messages)
                         {
@@ -243,13 +238,8 @@ namespace SFA.DAS.Payments.ServiceFabric.Core
                             applicationMessages.Add(message);
                         }
 
-                        //var stopwatch = Stopwatch.StartNew();
                         await Task.WhenAll(groupedMessages.Select(group =>
                             ProcessMessages(group.Key, group.Value, cancellationToken)));
-                        //stopwatch.Stop();
-                        //RecordProcessedAllBatchesTelemetry(stopwatch.ElapsedMilliseconds, messages.Count);
-                        //pipeLineStopwatch.Stop();
-                        //RecordPipelineTelemetry(pipeLineStopwatch.ElapsedMilliseconds, messages.Count);
                     }
                     catch (TaskCanceledException)
                     {
@@ -275,33 +265,6 @@ namespace SFA.DAS.Payments.ServiceFabric.Core
             }
         }
 
-        //private void RecordProcessedBatchTelemetry(long elapsedMilliseconds, int count, string batchType)
-        //{
-        //    RecordMetric("ProcessedBatch", elapsedMilliseconds, count, (properties, metrics) => properties.Add("MessageBatchType", batchType));
-        //}
-
-        //private void RecordProcessedAllBatchesTelemetry(long elapsedMilliseconds, int count)
-        //{
-        //    RecordMetric("ProcessedAllBatches", elapsedMilliseconds, count);
-        //}
-
-        //private void RecordPipelineTelemetry(long elapsedMilliseconds, int count)
-        //{
-        //    RecordMetric("Pipeline", elapsedMilliseconds, count);
-        //}
-
-        //private void RecordMetric(string eventName, long elapsedMilliseconds, int count, Action<Dictionary<string, string>, Dictionary<string, double>> metricsAction = null)
-        //{
-        //    var metrics = new Dictionary<string, double>
-        //    {
-        //        {TelemetryKeys.Duration, elapsedMilliseconds},
-        //        {TelemetryKeys.Count, count}
-        //    };
-        //    var properties = new Dictionary<string, string>();
-        //    metricsAction?.Invoke(properties, metrics);
-        //    telemetry.TrackEvent($"{TelemetryPrefix}.{eventName}", properties, metrics);
-        //}
-
         private object GetApplicationMessage(ServiceBusReceivedMessage message)
         {
             var applicationMessage = DeserializeMessage(message);
@@ -318,7 +281,6 @@ namespace SFA.DAS.Payments.ServiceFabric.Core
         {
             try
             {
-                //var stopwatch = Stopwatch.StartNew();
                 using (var containerScope = scopeFactory.CreateScope())
                 {
                     if (!containerScope.TryResolve(typeof(IHandleMessageBatches<>).MakeGenericType(groupType),
@@ -337,13 +299,10 @@ namespace SFA.DAS.Payments.ServiceFabric.Core
                     var list = (IList)Activator.CreateInstance(listType);
                     messages.ForEach(message => list.Add(message.Message));
 
-                    //var handlerStopwatch = Stopwatch.StartNew();
                     await (Task)methodInfo.Invoke(handler, new object[] { list, cancellationToken });
-                    //RecordMetric(handler.GetType().FullName, handlerStopwatch.ElapsedMilliseconds, list.Count);
                     await Task.WhenAll(messages.GroupBy(msg => msg.MessageReceiver).Select(group =>
                         group.Key.Complete(group.Select(msg => msg.ReceivedMessage.LockToken)))).ConfigureAwait(false);
                 }
-                //RecordProcessedBatchTelemetry(stopwatch.ElapsedMilliseconds, messages.Count, groupType.FullName);
             }
             catch (Exception e)
             {
@@ -383,9 +342,7 @@ namespace SFA.DAS.Payments.ServiceFabric.Core
                         list.Clear();
                         list.Add(retryMessage.Message);
 
-                        //var handlerStopwatch = Stopwatch.StartNew();
                         await (Task)methodInfo.Invoke(handler, new object[] { list, cancellationToken });
-                        //RecordMetric($"{handler.GetType().FullName}:Single", handlerStopwatch.ElapsedMilliseconds, 1);
 
                         await retryMessage.MessageReceiver.Complete(new List<string> { retryMessage.ReceivedMessage.LockToken });
                     }
@@ -397,28 +354,6 @@ namespace SFA.DAS.Payments.ServiceFabric.Core
                 }
             }
         }
-
-        //private string GetMessagePayload(Message receivedMessage)
-        //{
-        //    const string transportEncodingHeaderKey = "NServiceBus.Transport.Encoding";
-        //    var transportEncoding = receivedMessage.UserProperties.ContainsKey(transportEncodingHeaderKey)
-        //        ? (string)receivedMessage.UserProperties[transportEncodingHeaderKey]
-        //        : "application/octet-stream";
-        //    byte[] messageBody;
-        //    if (transportEncoding.Equals("wcf/byte-array", StringComparison.OrdinalIgnoreCase))
-        //    {
-        //        var doc = receivedMessage.GetBody<XmlElement>();
-        //        messageBody = Convert.FromBase64String(doc.InnerText);
-        //    }
-        //    else
-        //        messageBody = receivedMessage.Body;
-
-        //    var monitoringMessageJson = Encoding.UTF8.GetString(messageBody);
-        //    var sanitisedMessageJson = monitoringMessageJson
-        //        .Trim(Encoding.UTF8.GetString(Encoding.UTF8.GetPreamble())
-        //            .ToCharArray());
-        //    return sanitisedMessageJson;
-        //}
 
         public Task CloseAsync(CancellationToken cancellationToken)
         {
