@@ -10,15 +10,15 @@
     <PackageReference Include="AutoFixture.NUnit3" Version="4.11.0" />
     <PackageReference Include="ESFA.DC.Logging" Version="0.1.4-beta0001" />
     <PackageReference Include="FluentAssertions" Version="5.6.0" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="2.2.1" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="2.2.1" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="6.0.32" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="6.0.32" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.8.0" />
     <PackageReference Include="Moq" Version="4.10.0" />
     <PackageReference Include="nunit" Version="3.11.0" />
     <PackageReference Include="NUnit3TestAdapter" Version="3.11.2" />
-    <PackageReference Include="SFA.DAS.Payments.Application" Version="2.0.2" />
-    <PackageReference Include="SFA.DAS.Payments.EarningEvents.Messages" Version="2.0.0-prerelease-2" />
-    <PackageReference Include="SFA.DAS.Payments.FundingSource.Messages" Version="1.0.1" />
+    <PackageReference Include="SFA.DAS.Payments.Application" Version="0.4.5" />
+    <PackageReference Include="SFA.DAS.Payments.EarningEvents.Messages" Version="0.1.129" />
+    <PackageReference Include="SFA.DAS.Payments.FundingSource.Messages" Version="0.2.1" />
   </ItemGroup>
 
   <ItemGroup>
